@@ -73,6 +73,11 @@ func resourceServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"more_text": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default: "",
+			},
 			"template_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -92,7 +97,8 @@ func memeCreate(d *schema.ResourceData, m interface{}) error {
 	passwd := creds["password"]
 	templateID := d.Get("template_id").(string)
 	text := d.Get("text").(string)
-	resp, err := generateMeme(userName, passwd, templateID, text)
+	more_text := d.Get("more_text").(string)
+	resp, err := generateMeme(userName, passwd, templateID, text, more_text)
 	if err == nil {
 		d.SetId(resp.Data.Url)
 		d.Set("page_url", resp.Data.PageURL)
@@ -100,7 +106,7 @@ func memeCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func generateMeme(username string, passwd string, templateID string, message string) (MemeResponse, error) {
+func generateMeme(username string, passwd string, templateID string, message string, extra string) (MemeResponse, error) {
 	var bodyStr bytes.Buffer
 	bodyStr.WriteString("username=")
 	bodyStr.WriteString(username)
@@ -114,6 +120,11 @@ func generateMeme(username string, passwd string, templateID string, message str
 	bodyStr.WriteString("text0=")
 	bodyStr.WriteString(message)
 	bodyStr.WriteString("&")
+	if extra != "" {
+		bodyStr.WriteString("text1=")
+		bodyStr.WriteString(extra)
+		bodyStr.WriteString("&")
+	}
 	body := strings.NewReader(bodyStr.String())
 	resp, err := http.Post("https://api.imgflip.com/caption_image", "application/x-www-form-urlencoded", body )
 	var memeResponse MemeResponse

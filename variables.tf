@@ -21,3 +21,9 @@ variable "text" {
   type        = string
   default     = ""
 }
+
+variable "more_text" {
+  description = "meme bottom text"
+  type        = string
+  default     = ""
+}
